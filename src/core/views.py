@@ -5,14 +5,34 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .serializers import PostSerializer
+from .models import Post
+
+
+
+
 
 class TestView(APIView):
     def get(self, request, *args, **kwargs):
-        data = {
-            'name': 'john',
-            'age': 23
-        }
-        return Response(data)
+        qs = Post.objects.all()
+        # for one post (instance)
+        # post = qs.first()
+        # serializer = PostSerializer(post)
+        # many must be specified as there are many instances.
+        serializer = PostSerializer(qs, many=True)
+        # data = {
+        #     'name': 'john',
+        #     'age': 23
+        # }
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        # passing in data into a serializer will also perform validation.
+        serializer = PostSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
 
 
